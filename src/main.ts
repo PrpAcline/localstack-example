@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { handle } from "hono/aws-lambda";
 import { serve } from "@hono/node-server";
-import { DynamoDBClient, ScanCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 import { ulid } from "ulid";
 import { fileURLToPath } from "url";
@@ -10,7 +10,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const DATABASE_NAME = process.env.DATABASE_NAME;
-const AWS_ENDPOINT = process.env.AWS_ENDPOINT;
 
 const dynamo = new DynamoDBClient({ region: "us-east-2" });
 const ddb = DynamoDBDocument.from(dynamo);
