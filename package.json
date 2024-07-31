@@ -6,7 +6,7 @@
   "scripts": {
     "test": "vitest",
     "deploy": "cdk deploy --app \"vite-node infra/main.ts\"",
-    "localsetup": "cdklocal deploy --app \"vite-node infra/local.ts\"",
+    "local": "cdklocal bootstrap --app 'vite-node infra/local.ts' && cdklocal deploy --app 'vite-node infra/local.ts'",
     "build": "esbuild src/main.ts --outfile=build/main.js --format=esm --platform=node"
   },
   "author": "Andrew Cline",
