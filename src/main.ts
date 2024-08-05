@@ -32,6 +32,15 @@ app.get("/users", async (c) => {
   return c.json({ items: result.Items });
 });
 
+app.get("/count", async (c) => {
+  const result = await ddb.get({
+    TableName: DATABASE_NAME,
+    Key: { pk: "COUNT", sk: "COUNT" },
+  });
+
+  return c.json(result);
+});
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   serve(app, ({ port }) => {
     console.log(`listening on port ${port}`);
