@@ -23,7 +23,7 @@ app.post("/users", async (c) => {
     TableName: DATABASE_NAME,
     Item: { pk: ulid(), sk: "USER" },
   });
-  return c.json({ created: true }, 204);
+  return c.json({ created: true }, 200);
 });
 
 app.get("/users", async (c) => {

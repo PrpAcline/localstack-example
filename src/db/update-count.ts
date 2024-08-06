@@ -1,37 +1,49 @@
 import type { DynamoDBStreamHandler } from "aws-lambda";
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
+import { unmarshall } from "@aws-sdk/util-dynamodb";
 
 const dynamo = new DynamoDB({ region: "us-east-2" });
 const ddb = DynamoDBDocument.from(dynamo);
 
 export const handler: DynamoDBStreamHandler = async (event, context) => {
-  console.log(JSON.stringify(event, null, 2));
-  console.log(JSON.stringify(context, null, 2));
+  console.log(
+    "Records: ",
+    unmarshall(event.Records[0].dynamodb?.NewImage as any).sk === "USER",
+  );
+  console.log("eventName: ", event.Records[0].eventName === "INSERT");
 
   const result = event.Records.filter(
     (r) =>
-      r.eventName === "INSERT" && (r.dynamodb?.NewImage?.sk as any) === "USER",
-  ).map(async (_r) => {
+      r.eventName === "INSERT" &&
+      unmarshall(r.dynamodb?.NewImage as any).sk === "USER",
+  ).map(async (r) => {
+    console.log("HEY!!!!!");
     let count: number = 0;
     try {
       const countRecord = await ddb.get({
         TableName: process.env.TABLE_NAME,
-        Key: { pk: "COUNT" },
+        Key: { pk: "COUNT", sk: "COUNT" },
       });
 
-      count = countRecord.Item?.count;
+      count = countRecord.Item?.count || 0;
     } catch (e) {
-      console.error(e);
+      console.log(e);
     }
 
-    return ddb.put({
+    const result = await ddb.put({
       TableName: process.env.TABLE_NAME,
       Item: { pk: "COUNT", sk: "COUNT", count: count + 1 },
     });
+
+    console.log(result);
+
+    return result;
   });
 
-  const promises = await Promise.allSettled(result);
+  console.log("HERE");
 
-  console.log(promises);
+  const promises = await Promise.all(result);
+
+  return promises;
 };

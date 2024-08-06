@@ -9,21 +9,28 @@ export const setupDynamo = (stack: cdk.Stack, tableName: string) => {
     tableName,
     partitionKey: { name: "pk", type: ddb.AttributeType.STRING },
     sortKey: { name: "sk", type: ddb.AttributeType.STRING },
-    stream: ddb.StreamViewType.NEW_AND_OLD_IMAGES,
+    stream: ddb.StreamViewType.NEW_IMAGE,
+    billingMode: cdk.aws_dynamodb.BillingMode.PAY_PER_REQUEST,
   });
 
   const countHandler = new nodejs.NodejsFunction(stack, "count-handler", {
+    runtime: lambda.Runtime.NODEJS_20_X,
     entry: "src/db/update-count.ts",
-    environment: {
-      TABLE_NAME: table.tableName,
+    environment: { TABLE_NAME: table.tableName },
+    bundling: {
+      format: nodejs.OutputFormat.ESM,
+      platform: "node",
     },
   });
 
   countHandler.addEventSource(
     new sources.DynamoEventSource(table, {
+      batchSize: 1,
       startingPosition: lambda.StartingPosition.TRIM_HORIZON,
     }),
   );
+
+  table.grantReadWriteData(countHandler);
 
   return table;
 };
